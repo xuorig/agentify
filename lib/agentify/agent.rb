@@ -12,6 +12,7 @@ module Agentify
     end
 
     def stop
+      # TODO
     end
 
     def every(interval, &block)
