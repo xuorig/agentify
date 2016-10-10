@@ -18,12 +18,12 @@ module Agentify
       def reset
         now = Time.now
 
-        @next_execute = now unless interval
+        @next_execute = now unless @interval
 
         execute_time = last_fired || now
 
         while execute_time <= now
-          execute_time += interval
+          execute_time += @interval
         end
 
         @next_execute = execute_time

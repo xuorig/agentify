@@ -1,4 +1,4 @@
-require 'threading'
+require 'thread'
 
 module Agentify
   class Bucket

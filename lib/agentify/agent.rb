@@ -1,4 +1,5 @@
 require 'thread'
+require 'agentify/reactor'
 
 module Agentify
   class Agent
@@ -35,7 +36,7 @@ module Agentify
     private
 
     def run_reactor_in_thread
-      Thread.new { reactor.run }
+      Thread.new { @reactor.run }
     end
 
     def make_event_name

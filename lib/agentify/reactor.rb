@@ -1,4 +1,5 @@
 require 'thread'
+require 'agentify/reactor/event_timer'
 
 module Agentify
   class Reactor
@@ -17,7 +18,7 @@ module Agentify
     end
 
     def add_event_listener(event_name, &block)
-      @listeners[event_name] << &block
+      @listeners[event_name] << block
     end
 
     def add_timer(event, interval:)
@@ -42,17 +43,16 @@ module Agentify
     def run_once
       wait
 
-      fire_timers_if_needed
+      execute_timers_if_needed
 
-      until event_queue.empty?
-        event = queue.pop
+      until @queue.empty?
+        event = @queue.pop
 
         listeners[event].each do |callback|
           callback.call
-          @timers[event].reset if @timers[event]
         end
 
-        reset_timer_for_event(event)
+        @timers[event].reset if @timers[event]
       end
     end
 
