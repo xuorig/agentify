@@ -4,5 +4,4 @@ require "agentify/service"
 require "agentify/version"
 
 module Agentify
-  # Your code goes here...
 end

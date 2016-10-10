@@ -7,7 +7,7 @@ module Agentify
       def initialize(event, interval)
         @event = event
         @interval = interval
-        @next_execute = Time.now + interval
+        @next_execute = Time.now
         @last_fired = nil
       end
 

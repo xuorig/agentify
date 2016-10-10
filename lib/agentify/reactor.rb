@@ -6,7 +6,6 @@ module Agentify
     def initialize
       @self_pipe_reader, @self_pipe_writer = IO.pipe
       @queue = Queue.new
-
       @listeners = Hash.new { |h,k| h[k] = [] }
       @timers = {}
     end
