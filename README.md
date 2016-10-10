@@ -38,6 +38,9 @@ end
 my_agent.on(:new_data) { get_new_data }
 
 
+# start the agent thread
+my_agent.start
+
 # trigger events
 update_data(new_data)
 my_agent.trigger(:new_data)
