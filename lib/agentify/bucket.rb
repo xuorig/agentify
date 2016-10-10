@@ -8,7 +8,7 @@ module Agentify
       @max_size = max_size
     end
 
-    def consume
+    def consume!
       @lock.synchronize do
         result = @bucket
         @bucket = []

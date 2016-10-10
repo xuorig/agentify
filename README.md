@@ -1,8 +1,8 @@
 # Agentify
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/agentify`. To experiment with that code, run `bin/console` for an interactive prompt.
+> Agent Thread as a Service
 
-TODO: Delete this and the text above, and describe your gem
+Agentify allows you to delegate expensive I/O operations to an agent thread instead of making calls inline. See Usage for examples.
 
 ## Installation
 
@@ -22,7 +22,54 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Agentify provides you with abstractions on which you can build. The two important ones are `Agentify::Agent` and `Agentify::Bucket`.
+
+`Agentify::Agent` is the actual Agent. Using an agent you can set timers, listen for certain events, and trigger these events:
+
+```ruby
+my_agent = Agentify::Agent.new
+
+# use timers to execute a block every x amount of time
+my_agent.every(1.second) do |my_arg|
+  make_a_long_http_call(my_arg)
+end
+
+# listen to certain events
+my_agent.on(:new_data) { get_new_data }
+
+
+# trigger events
+update_data(new_data)
+my_agent.trigger(:new_data)
+```
+
+For instrumentation purposes you can use `Agentify::Bucket`, a thread safe queue-like object:
+
+Defining your own bucket:
+
+```ruby
+
+class RequestTimeBucket < Agentify::Bucket
+  def add_request_time_data(data)
+    # Agentify::Bucket defines the add method, a thread safe method to add data to the bucket
+    add({ start: data[:start], end: data[:end] })
+  end
+end
+
+REQUEST_TIME_BUCKET = RequestTimeBucket.new(max_size: 100)
+
+REQUEST_TIME_BUCKET.add_request_time_data({ start: start_time, end: end_time })
+
+data_to_be_sent = REQUEST_TIME_BUCKET.consume!
+```
+
+Using them together:
+
+```ruby
+my_agent.every(1.second) do
+  send_data_to_my_server(REQUEST_TIME_BUCKET.consume!)
+end
+```
 
 ## Development
 
