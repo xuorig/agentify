@@ -17,6 +17,22 @@ module Agentify
       end
     end
 
+    def run_once
+      wait
+
+      execute_timers_if_needed
+
+      until @queue.empty?
+        event = @queue.pop
+
+        listeners[event].each do |callback|
+          callback.call
+        end
+
+        @timers[event].reset if @timers[event]
+      end
+    end
+
     def add_event_listener(event_name, &block)
       @listeners[event_name] << block
     end
@@ -39,22 +55,6 @@ module Agentify
       :listeners,
       :timers
     )
-
-    def run_once
-      wait
-
-      execute_timers_if_needed
-
-      until @queue.empty?
-        event = @queue.pop
-
-        listeners[event].each do |callback|
-          callback.call
-        end
-
-        @timers[event].reset if @timers[event]
-      end
-    end
 
     def wait
       ready = IO.select(
