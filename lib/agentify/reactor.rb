@@ -17,15 +17,15 @@ module Agentify
     end
 
     def add_event_listener(event_name, &block)
-      listeners[event_name] << &block
+      @listeners[event_name] << &block
     end
 
     def add_timer(event, interval:)
-      timers[event] = EventTimer.new(event, interval)
+      @timers[event] = EventTimer.new(event, interval)
     end
 
     def trigger(event_name)
-      queue << event_name
+      @queue << event_name
       wakeup
     end
 
@@ -49,6 +49,7 @@ module Agentify
 
         listeners[event].each do |callback|
           callback.call
+          @timers[event].reset if @timers[event]
         end
 
         reset_timer_for_event(event)
@@ -67,17 +68,35 @@ module Agentify
     end
 
     def calculate_next_timer
-      #TODO when is the next timer ready to fire ?
+      return if @timers.empty?
+
+      next_timer = @timers.values.map(&:next_execute).min - Time.now
+
+      return 0 if next_timer < 0
+
+      next_timer
+    end
+
+    def execute_timers_if_needed
+      @timers.each { |event, timer| execute_timer(timer) }
+    end
+
+    def execute_timer(timer)
+      return unless timer.should_execute?
+
+      @queue << timer.event
+
+      timer.last_fired = Time.now
     end
 
     def read_self_pipe_if_needed(ready_io)
-      if ready_io && ready_io[0] && ready_io[0][0] == self_pipe_reader
-        self_pipe_reader.read(1)
+      if ready_io && ready_io[0] && ready_io[0][0] == @self_pipe_reader
+        @self_pipe_reader.read(1)
       end
     end
 
     def wakeup
-      self_pipe_writter.write_nonblock('!')
+      @self_pipe_writer.write_nonblock('!')
     end
   end
 end
